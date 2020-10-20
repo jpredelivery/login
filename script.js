@@ -50,22 +50,22 @@ const updateUI = async () => {
   if (isAuthenticated) {
     document.getElementById("gated-content").classList.remove("hidden");
 
-
+/*
     document.getElementById(
       "ipt-access-token"
     ).innerHTML = await auth0.getTokenSilently();
-    
+    */
     const token = await auth0.getTokenSilently();
     $.cookie("AccessToken", token);
     location.href = "https://jpredelivery.github.io/login/select.html"
-
+/*
     document.getElementById("ipt-user-profile").innerHTML = JSON.stringify(
       await auth0.getUser()
     );
-
+*/
     //プロフ画像
-    const profile = await auth0.getUser();
-    document.getElementById("ipt-user-profile-image").src = profile.picture;
+//    const profile = await auth0.getUser();
+//    document.getElementById("ipt-user-profile-image").src = profile.picture;
 
   } else {
     document.getElementById("gated-content").classList.add("hidden");
