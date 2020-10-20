@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>search dialog</title>
+    <meta charset="UTF-8">
+    <style>
+      form.testForm{background-color: #cc0; color: #ff0000; }	
+	    .hidden{display: none;}
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js" integrity="sha512-YUkaLm+KJ5lQXDBdqBqk7EVhJAdxRnVdT2vtCzwPHSweCzyMgYV/tgGF4/dCyqtCC2eCphz0lRQgatGVdfR0ww==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/1.2/auth0-spa-js.production.js"></script>
+</head>
+<body>
+<script>
+    const token = $.cookie("AccessToken");
+    const APP_PATH = `/auth0sample`; // https://ユーザー名.github.io/<ココ> or ルートパス利用なら`/`だけでOK
+    let auth0 = null;
+    const fetchAuthConfig = () => fetch("auth_config.json"); // auth_config.json読み込み
+
+    const configureClient = async () => {
+      const response = await fetchAuthConfig();
+      const config = await response.json();
+
+      auth0 = await createAuth0Client({
+        domain: config.domain,
+        client_id: config.clientId
+      });
+    };
+
+    window.onload = async () => {
+      await configureClient();
+
+      const isAuthenticated = await auth0.isAuthenticated();
+      if (isAuthenticated) {
+        document.getElementById("btn-logout").disabled = !isAuthenticated;
+      }
+    };
+		
+    const logout = () => {
+      auth0.logout({
+        returnTo: window.location.origin + APP_PATH
+      });
+    };
+    const clrDiv = () => {
+	    $("#search").html("");
+    };
+</script>
+	<p><h1>落ち呼情報検索</h1></p>
+        <p>
+    <form>
+	<label>電話番号：<input type="text" name="phoneNum" id="sbmphone" maxlength="11"></label>
+        <input type="button" id="sbmbtn" value="検索">
+	<button id="btn-del" onClick="clrDiv()">検索結果消去</button>
+    </form>
+        </p><br>
+<button id="btn-logout" disabled="false" onclick="logout()">Log out</button>
+<div id="search"></div>
+<script>
+$(function () {
+  $(document).on("click", "#sbmbtn", function() {
+    $.ajax({
+      url: "https://re-delivery-prod.apigee.net/v1/operations/htmlresp",
+      type: "GET",
+      headers: {
+        'Access-Control-Allow-Origin': 'https://uwan0.github.io',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${ token} `
+      },
+//      dataType: "json",
+      data: {phoneNum: $("#sbmphone").val()}
+    })
+      .done((data, textStatus, jqXHR) => {
+        console.log('done', jqXHR.status, data);
+        $("#search").html(data);
+      })
+      .fail((jqXHR, textStatus, errorThrown) => {
+        console.log('fail', jqXHR.status);
+      })
+  })
+})
+</script>
+</body>
+</html>
